@@ -1,0 +1,10 @@
+# Fly.io configuration for Tailscale Exit Node
+# Note: app and primary_region will be updated dynamically during deployment
+app = "tailscale-exit-node"
+primary_region = "fra"
+
+[build]
+image = "tailscale/tailscale:latest"
+
+[env]
+PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"

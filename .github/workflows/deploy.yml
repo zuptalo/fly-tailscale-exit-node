@@ -1,0 +1,113 @@
+name: Deploy Exit Node
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: 'Fly.io Region'
+        required: true
+        default: 'fra'
+        type: choice
+        options:
+          - ams  # Amsterdam, Netherlands
+          - arn  # Stockholm, Sweden
+          - atl  # Atlanta, Georgia (US)
+          - bog  # Bogotá, Colombia
+          - bom  # Mumbai, India
+          - bos  # Boston, Massachusetts (US)
+          - cdg  # Paris, France
+          - den  # Denver, Colorado (US)
+          - dfw  # Dallas, Texas (US)
+          - ewr  # Secaucus, NJ (US)
+          - eze  # Ezeiza, Argentina
+          - fra  # Frankfurt, Germany
+          - gdl  # Guadalajara, Mexico
+          - gig  # Rio de Janeiro, Brazil
+          - gru  # São Paulo, Brazil
+          - hkg  # Hong Kong, Hong Kong
+          - iad  # Ashburn, Virginia (US)
+          - jnb  # Johannesburg, South Africa
+          - lax  # Los Angeles, California (US)
+          - lhr  # London, United Kingdom
+          - mad  # Madrid, Spain
+          - mia  # Miami, Florida (US)
+          - nrt  # Tokyo, Japan
+          - ord  # Chicago, Illinois (US)
+          - otp  # Bucharest, Romania
+          - phx  # Phoenix, Arizona (US)
+          - qro  # Querétaro, Mexico
+          - scl  # Santiago, Chile
+          - sea  # Seattle, Washington (US)
+          - sin  # Singapore, Singapore
+          - sjc  # San Jose, California (US)
+          - syd  # Sydney, Australia
+          - waw  # Warsaw, Poland
+          - yul  # Montreal, Canada
+          - yyz  # Toronto, Canada
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Fly.io CLI
+        uses: superfly/flyctl-actions/setup-flyctl@master
+
+      - name: Verify flyctl installation
+        run: |
+          echo "PATH: $PATH"
+          which flyctl || echo "flyctl not found"
+          ls -la /opt/hostedtoolcache/flyctl/ || echo "flyctl directory not found"
+          flyctl version || echo "flyctl version failed"
+
+      - name: Destroy existing app (if exists)
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+        run: |
+          if flyctl status --app "$APP_NAME" &> /dev/null; then
+            echo "🗑️ Destroying existing app: $APP_NAME"
+            flyctl apps destroy "$APP_NAME" --yes
+            echo "✅ Existing app destroyed successfully"
+            # Wait a moment for cleanup
+            sleep 5
+          else
+            echo "ℹ️ No existing app to destroy"
+          fi
+
+      - name: Deploy Exit Node
+        env:
+          FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          HEADSCALE_URL: ${{ secrets.HEADSCALE_URL }}
+          TS_AUTHKEY: ${{ secrets.TS_AUTHKEY }}
+          APP_NAME: ${{ secrets.APP_NAME }}
+          REGION: ${{ github.event.inputs.region }}
+        run: |
+          # Update fly.toml with selected region and app name
+          sed -i "s/app = .*/app = \"$APP_NAME\"/" fly.toml
+          sed -i "s/primary_region = .*/primary_region = \"$REGION\"/" fly.toml
+          
+          # Create app (will be new since we destroyed the old one)
+          echo "🚀 Creating new app: $APP_NAME in region: $REGION"
+          flyctl apps create "$APP_NAME" --org personal
+          
+          # Set secrets
+          flyctl secrets set \
+            TS_AUTHKEY="$TS_AUTHKEY" \
+            TS_STATE_DIR="/tmp/tailscale" \
+            TS_USERSPACE="true" \
+            TS_ACCEPT_DNS="false" \
+            TS_HOSTNAME="fly-exit-node" \
+            TS_ROUTES="0.0.0.0/0,::/0" \
+            TS_EXTRA_ARGS="--login-server=$HEADSCALE_URL --advertise-tags=tag:fly --accept-routes --netfilter-mode=off" \
+            TS_AUTH_ONCE="true" \
+            TS_EPHEMERAL="false" \
+            --app "$APP_NAME"
+          
+          # Deploy
+          echo "📦 Deploying to region: $REGION"
+          flyctl deploy --app "$APP_NAME"
+          
+          echo "✅ Exit node deployed successfully in $REGION"
+          echo "🌐 Node hostname: fly-exit-node"
