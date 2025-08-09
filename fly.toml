@@ -12,23 +12,6 @@ PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
 # Enable init system for proper process handling
 init = true
 
-# Network configuration for exit node
-[[services]]
-  internal_port = 41641
-  protocol = "udp"
-
-  [[services.ports]]
-    port = 41641
-
 # Enable console access for state extraction
 [console]
-  guest = true
-
-# Health check
-[checks]
-  [checks.tailscale_status]
-    grace_period = "30s"
-    interval = "30s"
-    method = "exec"
-    command = ["tailscale", "status"]
-    timeout = "10s"
+guest = true
