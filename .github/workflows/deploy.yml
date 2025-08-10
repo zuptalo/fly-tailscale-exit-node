@@ -96,7 +96,7 @@ jobs:
           flyctl secrets set \
             TS_AUTHKEY="$TS_AUTHKEY" \
             TS_STATE_DIR="/var/lib/tailscale" \
-            TS_USERSPACE="false" \
+            TS_USERSPACE="true" \
             TS_ACCEPT_DNS="false" \
             TS_HOSTNAME="fly-exit-node" \
             TS_ROUTES="0.0.0.0/0,::/0" \
