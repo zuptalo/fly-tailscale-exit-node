@@ -92,10 +92,10 @@ jobs:
           echo "🚀 Creating new app: $APP_NAME in region: $REGION"
           flyctl apps create "$APP_NAME" --org personal
           
-          # Set secrets
+          # Set secrets (including optional state file)
           flyctl secrets set \
             TS_AUTHKEY="$TS_AUTHKEY" \
-            TS_STATE_DIR="/tmp/tailscale" \
+            TS_STATE_DIR="/var/lib/tailscale" \
             TS_USERSPACE="true" \
             TS_ACCEPT_DNS="false" \
             TS_HOSTNAME="fly-exit-node" \
@@ -105,9 +105,18 @@ jobs:
             TS_EPHEMERAL="false" \
             --app "$APP_NAME"
           
+          # Set state file if it exists as a secret (base64 encoded)
+          if [ ! -z "${{ secrets.TS_STATE_FILE_BASE64 }}" ]; then
+            echo "📄 Setting Tailscale state file from secret"
+            flyctl secrets set \
+              TS_STATE_FILE_BASE64="${{ secrets.TS_STATE_FILE_BASE64 }}" \
+              --app "$APP_NAME"
+          fi
+          
           # Deploy
           echo "📦 Deploying to region: $REGION"
           flyctl deploy --app "$APP_NAME"
           
           echo "✅ Exit node deployed successfully in $REGION"
           echo "🌐 Node hostname: fly-exit-node"
+          echo "💡 To extract state file: flyctl ssh console --app $APP_NAME -C 'base64 -w 0 /var/lib/tailscale/tailscaled.state'"

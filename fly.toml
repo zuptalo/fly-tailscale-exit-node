@@ -4,7 +4,14 @@ app = "tailscale-exit-node"
 primary_region = "fra"
 
 [build]
-image = "tailscale/tailscale:latest"
+dockerfile = "Dockerfile"
 
 [env]
 PATH = "/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+# Enable init system for proper process handling
+init = true
+
+# Enable console access for state extraction
+[console]
+guest = true
