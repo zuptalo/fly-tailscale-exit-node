@@ -113,10 +113,44 @@ jobs:
               --app "$APP_NAME"
           fi
           
-          # Deploy
-          echo "📦 Deploying to region: $REGION"
-          flyctl deploy --app "$APP_NAME"
+          # Deploy with explicit single machine settings for free tier
+          echo "📦 Deploying single machine to region: $REGION (free tier optimized)"
+          flyctl deploy \
+            --app "$APP_NAME" \
+            --ha=false \
+            --strategy=immediate \
+            --vm-size=shared-cpu-1x \
+            --vm-memory=256mb
           
-          echo "✅ Exit node deployed successfully in $REGION"
+          # Verify only one machine exists and clean up if needed
+          echo "🧹 Verifying single machine deployment..."
+          MACHINE_COUNT=$(flyctl machines list --app "$APP_NAME" --json | jq length)
+          
+          if [ "$MACHINE_COUNT" -gt 1 ]; then
+            echo "⚠️ Found $MACHINE_COUNT machines, this shouldn't happen with --ha=false"
+            echo "🔧 Cleaning up extra machines to stay on free tier..."
+          
+            # Get all machines and keep only the newest one
+            MACHINES=$(flyctl machines list --app "$APP_NAME" --json | jq -r 'sort_by(.created_at) | reverse | .[].id')
+            NEWEST_MACHINE=$(echo "$MACHINES" | head -n 1)
+          
+            echo "$MACHINES" | tail -n +2 | while read machine_id; do
+              echo "Removing extra machine: $machine_id"
+              flyctl machines remove "$machine_id" --app "$APP_NAME" --force
+            done
+          
+            echo "✅ Kept only newest machine: $NEWEST_MACHINE"
+          else
+            echo "✅ Perfect! Only $MACHINE_COUNT machine found as expected"
+          fi
+          
+          # Final verification
+          echo ""
+          echo "📊 Final deployment status:"
+          flyctl status --app "$APP_NAME"
+          
+          echo ""
+          echo "✅ Single-machine exit node deployed successfully in $REGION"
+          echo "💰 Optimized for Fly.io free tier (1 machine, shared-cpu-1x, 256MB)"
           echo "🌐 Node hostname: fly-exit-node"
           echo "💡 To extract state file: flyctl ssh console --app $APP_NAME -C 'base64 -w 0 /var/lib/tailscale/tailscaled.state'"

@@ -1,4 +1,4 @@
-# Fly.io configuration for Tailscale Exit Node
+# Fly.io configuration for Tailscale Exit Node - Single Machine Only
 # Note: app and primary_region will be updated dynamically during deployment
 app = "tailscale-exit-node"
 primary_region = "fra"
@@ -15,3 +15,13 @@ init = true
 # Enable console access for state extraction
 [console]
 guest = true
+
+# Deployment strategy to ensure single machine only
+[deploy]
+  strategy = "immediate"     # Replace machine immediately, no rolling deployment
+  max_unavailable = 1        # Allow only 1 machine to be unavailable during deploy
+
+# Explicitly configure for single machine to stay on free tier
+[[vm]]
+  size = "shared-cpu-1x"     # Free tier size
+  memory = "256mb"           # Minimum memory to stay free
