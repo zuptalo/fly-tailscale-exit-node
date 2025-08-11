@@ -92,6 +92,7 @@ jobs:
             TS_EXTRA_ARGS="--login-server=$HEADSCALE_URL --advertise-tags=tag:fly --accept-routes --netfilter-mode=off --advertise-exit-node" \
             TS_AUTH_ONCE="true" \
             TS_EPHEMERAL="false" \
+            GOMEMLIMIT="200MiB" \
             --app "$APP_NAME"
           
           # Set state file if it exists as a secret (base64 encoded)
