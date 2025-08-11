@@ -34,7 +34,7 @@ Go to your repo → Settings → Secrets and variables → Actions, add:
 
 ### 3. Deploy/Destroy
 
-- **Deploy**: Go to Actions → "Deploy Exit Node" → Run workflow → Select region from dropdown
+- **Deploy**: Go to Actions → "Deploy Exit Node" → Run workflow → Select gateway region from dropdown
 - **Destroy**: Go to Actions → "Destroy Exit Node" → Run workflow
 
 **Important:** The deploy workflow will automatically destroy any existing app with the same name before deploying to the new region. This ensures a clean deployment in your selected region.
@@ -83,44 +83,56 @@ If your app name is taken, try:
   fly status --app your-app-name
 ```
 
-## Regions Available
+## Gateway Regions Available
 
-The workflow supports deployment to all Fly.io regions:
+**This deployment only supports Fly.io Gateway regions** for enhanced connectivity, WireGuard access, and private networking capabilities.
+
+Available gateway regions:
 - `ams` - Amsterdam, Netherlands
-- `arn` - Stockholm, Sweden
-- `atl` - Atlanta, Georgia (US)
-- `bog` - Bogotá, Colombia
 - `bom` - Mumbai, India
-- `bos` - Boston, Massachusetts (US)
 - `cdg` - Paris, France
-- `den` - Denver, Colorado (US)
 - `dfw` - Dallas, Texas (US)
-- `ewr` - Secaucus, NJ (US)
-- `eze` - Ezeiza, Argentina
-- `fra` - Frankfurt, Germany
-- `gdl` - Guadalajara, Mexico
-- `gig` - Rio de Janeiro, Brazil
-- `gru` - São Paulo, Brazil
+- `fra` - Frankfurt, Germany ⭐ **(Recommended - Highest capacity)**
 - `hkg` - Hong Kong, Hong Kong
 - `iad` - Ashburn, Virginia (US)
-- `jnb` - Johannesburg, South Africa
-- `lax` - Los Angeles, California (US)
 - `lhr` - London, United Kingdom
-- `mad` - Madrid, Spain
-- `mia` - Miami, Florida (US)
 - `nrt` - Tokyo, Japan
 - `ord` - Chicago, Illinois (US)
-- `otp` - Bucharest, Romania
-- `phx` - Phoenix, Arizona (US)
 - `qro` - Querétaro, Mexico
 - `scl` - Santiago, Chile
 - `sea` - Seattle, Washington (US)
 - `sin` - Singapore, Singapore
 - `sjc` - San Jose, California (US)
 - `syd` - Sydney, Australia
-- `waw` - Warsaw, Poland
-- `yul` - Montreal, Canada
 - `yyz` - Toronto, Canada
+
+### Why Gateway Regions Only?
+
+Gateway regions provide:
+- **WireGuard VPN access** - Enhanced connectivity to your Fly.io private network
+- **SSH connectivity** - Direct console access for troubleshooting and state extraction
+- **Private networking** - Better app-to-app communication if you expand your setup
+- **Debugging capabilities** - Enhanced monitoring and management tools
+
+### Recommended Regions by Geography:
+
+**Europe:**
+- `fra` - Frankfurt, Germany (highest capacity)
+- `ams` - Amsterdam, Netherlands
+- `lhr` - London, United Kingdom
+- `cdg` - Paris, France
+
+**North America:**
+- `iad` - Ashburn, Virginia (US)
+- `sjc` - San Jose, California (US)
+- `dfw` - Dallas, Texas (US)
+- `sea` - Seattle, Washington (US)
+
+**Asia Pacific:**
+- `nrt` - Tokyo, Japan
+- `sin` - Singapore, Singapore
+- `hkg` - Hong Kong, Hong Kong
+- `syd` - Sydney, Australia
 
 ## License
 

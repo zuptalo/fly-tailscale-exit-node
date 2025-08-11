@@ -4,46 +4,35 @@ on:
   workflow_dispatch:
     inputs:
       region:
-        description: 'Fly.io Region'
+        description: 'Fly.io Gateway Region'
         required: true
         default: 'fra'
         type: choice
         options:
-          - ams  # Amsterdam, Netherlands
-          - arn  # Stockholm, Sweden
-          - atl  # Atlanta, Georgia (US)
-          - bog  # Bogotá, Colombia
-          - bom  # Mumbai, India
-          - bos  # Boston, Massachusetts (US)
-          - cdg  # Paris, France
-          - den  # Denver, Colorado (US)
-          - dfw  # Dallas, Texas (US)
-          - ewr  # Secaucus, NJ (US)
-          - eze  # Ezeiza, Argentina
-          - fra  # Frankfurt, Germany
-          - gdl  # Guadalajara, Mexico
-          - gig  # Rio de Janeiro, Brazil
-          - gru  # São Paulo, Brazil
-          - hkg  # Hong Kong, Hong Kong
-          - iad  # Ashburn, Virginia (US)
-          - jnb  # Johannesburg, South Africa
-          - lax  # Los Angeles, California (US)
-          - lhr  # London, United Kingdom
-          - mad  # Madrid, Spain
-          - mia  # Miami, Florida (US)
-          - nrt  # Tokyo, Japan
-          - ord  # Chicago, Illinois (US)
-          - otp  # Bucharest, Romania
-          - phx  # Phoenix, Arizona (US)
-          - qro  # Querétaro, Mexico
-          - scl  # Santiago, Chile
-          - sea  # Seattle, Washington (US)
-          - sin  # Singapore, Singapore
-          - sjc  # San Jose, California (US)
-          - syd  # Sydney, Australia
-          - waw  # Warsaw, Poland
-          - yul  # Montreal, Canada
-          - yyz  # Toronto, Canada
+          # Europe
+          - fra  # 🇩🇪 Frankfurt, Germany (Recommended - Highest capacity)
+          - ams  # 🇳🇱 Amsterdam, Netherlands
+          - lhr  # 🇬🇧 London, United Kingdom
+          - cdg  # 🇫🇷 Paris, France
+          # North America - US East
+          - iad  # 🇺🇸 Ashburn, Virginia (US)
+          - ord  # 🇺🇸 Chicago, Illinois (US)
+          # North America - US West
+          - sjc  # 🇺🇸 San Jose, California (US)
+          - sea  # 🇺🇸 Seattle, Washington (US)
+          # North America - US Central
+          - dfw  # 🇺🇸 Dallas, Texas (US)
+          # North America - Canada/Mexico
+          - yyz  # 🇨🇦 Toronto, Canada
+          - qro  # 🇲🇽 Querétaro, Mexico
+          # Asia Pacific
+          - nrt  # 🇯🇵 Tokyo, Japan
+          - sin  # 🇸🇬 Singapore, Singapore
+          - hkg  # 🇭🇰 Hong Kong, Hong Kong
+          - syd  # 🇦🇺 Sydney, Australia
+          - bom  # 🇮🇳 Mumbai, India
+          # South America
+          - scl  # 🇨🇱 Santiago, Chile
 
 jobs:
   deploy:
@@ -89,7 +78,7 @@ jobs:
           sed -i "s/primary_region = .*/primary_region = \"$REGION\"/" fly.toml
           
           # Create app (will be new since we destroyed the old one)
-          echo "🚀 Creating new app: $APP_NAME in region: $REGION"
+          echo "🚀 Creating new app: $APP_NAME in gateway region: $REGION"
           flyctl apps create "$APP_NAME" --org personal
           
           # Set secrets (including optional state file)
@@ -114,7 +103,7 @@ jobs:
           fi
           
           # Deploy with explicit single machine settings for free tier
-          echo "📦 Deploying single machine to region: $REGION (free tier optimized)"
+          echo "📦 Deploying single machine to gateway region: $REGION (free tier optimized)"
           flyctl deploy \
             --app "$APP_NAME" \
             --ha=false \
@@ -150,7 +139,8 @@ jobs:
           flyctl status --app "$APP_NAME"
           
           echo ""
-          echo "✅ Single-machine exit node deployed successfully in $REGION"
+          echo "✅ Single-machine exit node deployed successfully in gateway region $REGION"
           echo "💰 Optimized for Fly.io free tier (1 machine, shared-cpu-1x, 256MB)"
           echo "🌐 Node hostname: fly-exit-node"
+          echo "🔗 Gateway region benefits: WireGuard access, SSH connectivity, private networking"
           echo "💡 To extract state file: flyctl ssh console --app $APP_NAME -C 'base64 -w 0 /var/lib/tailscale/tailscaled.state'"
