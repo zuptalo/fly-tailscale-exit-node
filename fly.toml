@@ -25,3 +25,14 @@ guest = true
 [[vm]]
   size = "shared-cpu-1x"     # Free tier size
   memory = "256mb"           # Minimum memory to stay free
+
+# Add swap to handle memory spikes without cost
+swap_size_mb = 128
+
+# Add restart policy for better reliability
+[[restart]]
+  policy = "on-failure"
+  retries = 3
+
+# Disable any services that might trigger scaling
+# (No http_service or services sections = no load balancing = single machine)
